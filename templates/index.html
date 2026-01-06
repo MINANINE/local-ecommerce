@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>简单电商</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: Arial; }
+        body { background: #f5f5f5; padding: 20px; }
+        header { background: #007bff; color: white; padding: 15px; margin-bottom: 20px; border-radius: 10px; }
+        h1 { margin-bottom: 10px; }
+        nav a { color: white; margin-right: 15px; text-decoration: none; padding: 5px 10px; background: rgba(255,255,255,0.2); border-radius: 5px; }
+        nav a:hover { background: rgba(255,255,255,0.3); }
+        .products { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px; }
+        .product { background: white; padding: 15px; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .product h3 { margin-bottom: 10px; color: #333; }
+        .price { color: #ff4400; font-size: 18px; font-weight: bold; margin: 10px 0; }
+        .desc { color: #666; margin-bottom: 10px; font-size: 14px; }
+        .stock { color: #28a745; margin-bottom: 15px; }
+        .add-btn { background: #007bff; color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer; width: 100%; }
+        .add-btn:hover { background: #0056b3; }
+        .cart-link { float: right; background: white; color: #007bff; padding: 8px 15px; border-radius: 5px; text-decoration: none; margin-left: 10px; }
+        .user-info { float: right; margin-right: 15px; color: white; }
+        .logout-btn { background: #dc3545; color: white; border: none; padding: 5px 10px; border-radius: 5px; cursor: pointer; margin-left: 10px; }
+        .search-form { display: inline; margin-right: 15px; }
+        .search-input { padding: 5px; border-radius: 5px; border: 1px solid #ddd; width: 200px; }
+        .search-btn { padding: 5px 10px; background: white; border: 1px solid #007bff; border-radius: 5px; color: #007bff; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>简单电商</h1>
+        <nav>
+            <div style="float: left;">
+                <a href="/">全部商品</a>
+                <a href="/category/手机">手机</a>
+                <a href="/category/电脑">电脑</a>
+                <a href="/category/平板">平板</a>
+                <a href="/category/耳机">耳机</a>
+                <a href="/category/游戏">游戏</a>
+                <a href="/category/显示器">显示器</a>
+            </div>
+            <div style="float: right;">
+                <form action="/search" method="get" class="search-form">
+                    <input type="text" name="keyword" placeholder="搜索商品..." class="search-input" 
+                           value="{{ search_keyword if search_keyword else '' }}">
+                    <button type="submit" class="search-btn">搜索</button>
+                </form>
+                
+                <span class="user-info">欢迎，{{ username }}！</span>
+                <a href="/orders" class="cart-link">📋 我的订单</a>
+                <a href="/cart" class="cart-link">🛒 购物车</a>
+                <a href="/logout" class="logout-btn">退出</a>
+            </div>
+            <div style="clear: both;"></div>
+        </nav>
+    </header>
+    
+    <main>
+        {% if current_category %}
+        <h2 style="margin-bottom: 20px;">分类: {{ current_category }}</h2>
+        {% endif %}
+        
+        {% if search_keyword %}
+        <h2 style="margin-bottom: 20px;">搜索结果: "{{ search_keyword }}"</h2>
+        {% endif %}
+        
+        <div class="products">
+            {% for product in products %}
+            <div class="product">
+                <h3>{{ product[1] }}</h3>
+                <div class="price">¥{{ product[2] }}</div>
+                <div class="desc">{{ product[3] }}</div>
+                <div class="stock">库存: {{ product[4] }}件</div>
+                <button class="add-btn" onclick="window.location.href='/add?product_id={{ product[0] }}'">
+                    加入购物车
+                </button>
+            </div>
+            {% endfor %}
+        </div>
+    </main>
+</body>
+</html>
