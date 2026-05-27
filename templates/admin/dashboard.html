@@ -33,6 +33,10 @@
             background: #17a2b8;
             color: white;
         }
+        .analytics-btn {
+            background: #6f42c1;
+            color: white;
+        }
         .logout-btn {
             background: #dc3545;
             color: white;
@@ -80,14 +84,22 @@
     </style>
 </head>
 <body>
+    {% include '_toast.html' %}
     <div class="admin-header">
         <h1>商品管理系统</h1>
-        <p>管理员：{{ username }}</p>
+        <p>
+            {% if session.get('role') == 'admin' %}管理者{% else %}销售人员{% endif %}：{{ username }}
+        </p>
     </div>
-    
+
     <div class="admin-actions">
-        <a href="/admin/add_product" class="action-btn add-btn">➕ 添加新商品</a>
-        <a href="/admin/orders" class="action-btn orders-btn">📋 管理订单</a>
+        <a href="/admin/add_product" class="action-btn add-btn">添加新商品</a>
+        <a href="/admin/orders" class="action-btn orders-btn">管理订单</a>
+        <a href="/admin/user-behavior" class="action-btn" style="background:#fd7e14;color:white;">用户行为日志</a>
+        {% if session.get('role') == 'admin' %}
+        <a href="/admin/analytics" class="action-btn analytics-btn">数据分析看板</a>
+        <a href="/admin/sales_management" class="action-btn" style="background:#6f42c1;color:white;">销售管理</a>
+        {% endif %}
         <a href="/admin/logout" class="action-btn logout-btn">退出管理</a>
         <div style="clear: both;"></div>
     </div>

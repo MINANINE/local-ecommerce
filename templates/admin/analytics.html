@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>数据分析看板</title>
+    <meta http-equiv="refresh" content="300">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: Arial; }
+        body { background: #f5f5f5; padding: 20px; }
+        .admin-header {
+            background: #28a745;
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .admin-actions { margin-bottom: 20px; }
+        .action-btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            margin-right: 10px;
+            background: #6c757d;
+            color: white;
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 20px;
+        }
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        .stat-card h3 {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+        .stat-card .value {
+            font-size: 28px;
+            font-weight: bold;
+            color: #007bff;
+        }
+        .stat-card.sales .value { color: #ff4400; }
+        .panel {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .panel h2 {
+            margin-bottom: 20px;
+            color: #333;
+            font-size: 18px;
+        }
+        .chart {
+            width: 100%;
+            height: 400px;
+        }
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .data-table th {
+            background: #343a40;
+            color: white;
+            padding: 12px;
+            text-align: left;
+        }
+        .data-table td {
+            padding: 10px;
+            border-bottom: 1px solid #eee;
+        }
+        .data-table tr:hover { background: #f8f9fa; }
+        .rank {
+            display: inline-block;
+            width: 24px;
+            height: 24px;
+            line-height: 24px;
+            text-align: center;
+            border-radius: 50%;
+            background: #e9ecef;
+            color: #495057;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        .rank.top3 { background: #ffc107; color: #333; }
+        .anomaly-surge { background: #f8d7da; }
+        .anomaly-drop { background: #fff3cd; }
+        .anomaly-tag {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        .anomaly-tag.surge { background: #dc3545; color: white; }
+        .anomaly-tag.drop { background: #ffc107; color: #333; }
+        .no-anomaly {
+            text-align: center;
+            padding: 30px;
+            color: #28a745;
+            font-size: 16px;
+            background: #d4edda;
+            border-radius: 8px;
+        }
+        .refresh-hint {
+            font-size: 12px;
+            color: #999;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="admin-header">
+        <h1>数据分析看板</h1>
+        <p>管理员：{{ username }}</p>
+    </div>
+
+    <div class="admin-actions">
+        <a href="/admin" class="action-btn">返回商品管理</a>
+        <a href="/admin/orders" class="action-btn">订单管理</a>
+    </div>
+
+    <div class="panel">
+        <h2>销售异常监控</h2>
+        {% if sales_anomalies %}
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>商品名称</th>
+                    <th>今日销量</th>
+                    <th>过去7天日均</th>
+                    <th>异常类型</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in sales_anomalies %}
+                <tr class="{% if item[3] == '暴增' %}anomaly-surge{% else %}anomaly-drop{% endif %}">
+                    <td>{{ item[0] }}</td>
+                    <td>{{ item[1] }} 件</td>
+                    <td>{{ "%.2f"|format(item[2]) }} 件</td>
+                    <td>
+                        <span class="anomaly-tag {% if item[3] == '暴增' %}surge{% else %}drop{% endif %}">
+                            {{ item[3] }}
+                        </span>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+            <p class="no-anomaly">今日无销售异常</p>
+        {% endif %}
+        <p class="refresh-hint">页面每 5 分钟自动刷新</p>
+    </div>
+
+    <div class="panel">
+        <h2>用户画像</h2>
+        <div class="stats-grid">
+            <div class="stat-card">
+                <h3>总用户数</h3>
+                <div class="value">{{ total_users }}</div>
+            </div>
+            <div class="stat-card">
+                <h3>总订单数</h3>
+                <div class="value">{{ total_orders }}</div>
+            </div>
+            <div class="stat-card sales">
+                <h3>总销售额</h3>
+                <div class="value">¥{{ "%.2f"|format(total_sales) }}</div>
+            </div>
+            <div class="stat-card">
+                <h3>客单价</h3>
+                <div class="value">¥{{ "%.2f"|format(avg_order_value) }}</div>
+            </div>
+            <div class="stat-card">
+                <h3>人均购买商品数</h3>
+                <div class="value">{{ "%.1f"|format(avg_products_per_user) }}</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="panel">
+        <h2>用户购买力与偏好分类</h2>
+        {% if user_profiles %}
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>用户名</th>
+                    <th>累计消费金额</th>
+                    <th>偏好分类</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for profile in user_profiles %}
+                <tr>
+                    <td>{{ profile[0] }}</td>
+                    <td>¥{{ "%.2f"|format(profile[1]) }}</td>
+                    <td>{{ profile[2] }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+            <p style="color: #666;">暂无用户数据</p>
+        {% endif %}
+    </div>
+
+    <div class="panel">
+        <h2>近7天销售额趋势</h2>
+        <div id="dailyChart" class="chart"></div>
+    </div>
+
+    <div class="panel">
+        <h2>近4周销售额趋势</h2>
+        <div id="weeklyChart" class="chart"></div>
+    </div>
+
+    <div class="panel">
+        <h2>商品销售排行榜 TOP 10</h2>
+        {% if top_products %}
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>排名</th>
+                    <th>商品名称</th>
+                    <th>销量</th>
+                    <th>销售额</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for product in top_products %}
+                <tr>
+                    <td><span class="rank {% if loop.index <= 3 %}top3{% endif %}">{{ loop.index }}</span></td>
+                    <td>{{ product[0] }}</td>
+                    <td>{{ product[1] }} 件</td>
+                    <td>¥{{ "%.2f"|format(product[2]) }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+            <p style="color: #666;">暂无销售数据</p>
+        {% endif %}
+    </div>
+
+    <script>
+        const dailySales = {{ daily_sales_json | safe }};
+        const weeklySales = {{ weekly_sales_json | safe }};
+
+        const dailyChart = echarts.init(document.getElementById('dailyChart'));
+        dailyChart.setOption({
+            tooltip: {
+                trigger: 'axis',
+                formatter: function(params) {
+                    const item = params[0];
+                    return item.name + '<br/>销售额: ¥' + item.value.toFixed(2);
+                }
+            },
+            xAxis: {
+                type: 'category',
+                data: dailySales.map(item => item[0]),
+                axisLabel: { rotate: 30 }
+            },
+            yAxis: {
+                type: 'value',
+                name: '销售额 (元)',
+                axisLabel: {
+                    formatter: function(value) {
+                        return '¥' + value;
+                    }
+                }
+            },
+            series: [{
+                name: '日销售额',
+                type: 'line',
+                data: dailySales.map(item => item[1]),
+                smooth: true,
+                itemStyle: { color: '#007bff' },
+                areaStyle: { color: 'rgba(0, 123, 255, 0.15)' }
+            }]
+        });
+
+        const weeklyChart = echarts.init(document.getElementById('weeklyChart'));
+        weeklyChart.setOption({
+            tooltip: {
+                trigger: 'axis',
+                formatter: function(params) {
+                    const item = params[0];
+                    return '第' + item.name + '周<br/>销售额: ¥' + item.value.toFixed(2);
+                }
+            },
+            xAxis: {
+                type: 'category',
+                data: weeklySales.map(item => item[0]),
+                name: '周数'
+            },
+            yAxis: {
+                type: 'value',
+                name: '销售额 (元)',
+                axisLabel: {
+                    formatter: function(value) {
+                        return '¥' + value;
+                    }
+                }
+            },
+            series: [{
+                name: '周销售额',
+                type: 'line',
+                data: weeklySales.map(item => item[1]),
+                smooth: true,
+                itemStyle: { color: '#28a745' },
+                areaStyle: { color: 'rgba(40, 167, 69, 0.15)' }
+            }]
+        });
+
+        window.addEventListener('resize', function() {
+            dailyChart.resize();
+            weeklyChart.resize();
+        });
+    </script>
+</body>
+</html>
