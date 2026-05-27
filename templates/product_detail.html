@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{{ product[1] }} - 商品详情</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: Arial; }
+        body { background: #f5f5f5; padding: 20px; }
+        header { background: #007bff; color: white; padding: 15px; margin-bottom: 20px; border-radius: 10px; }
+        h1 { margin-bottom: 10px; }
+        nav a { color: white; margin-right: 15px; text-decoration: none; padding: 5px 10px; background: rgba(255,255,255,0.2); border-radius: 5px; }
+        nav a:hover { background: rgba(255,255,255,0.3); }
+        .cart-link { float: right; background: white; color: #007bff; padding: 8px 15px; border-radius: 5px; text-decoration: none; margin-left: 10px; }
+        .user-info { float: right; margin-right: 15px; color: white; }
+        .logout-btn { background: #dc3545; color: white; border: none; padding: 5px 10px; border-radius: 5px; cursor: pointer; margin-left: 10px; text-decoration: none; }
+        .detail-card { background: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); max-width: 800px; margin: 0 auto; }
+        .detail-card h2 { margin-bottom: 20px; color: #333; font-size: 28px; }
+        .detail-row { margin-bottom: 15px; font-size: 16px; color: #555; }
+        .detail-row strong { color: #333; margin-right: 8px; }
+        .price { color: #ff4400; font-size: 24px; font-weight: bold; margin: 20px 0; }
+        .desc { color: #666; line-height: 1.6; margin-bottom: 20px; padding: 15px; background: #f8f9fa; border-radius: 8px; }
+        .stock { color: #28a745; margin-bottom: 20px; }
+        .category { display: inline-block; background: #e9ecef; color: #495057; padding: 4px 12px; border-radius: 15px; font-size: 14px; }
+        .add-btn { background: #007bff; color: white; border: none; padding: 12px 30px; border-radius: 5px; cursor: pointer; font-size: 16px; }
+        .add-btn:hover { background: #0056b3; }
+        .back-btn { display: inline-block; margin-bottom: 20px; background: white; color: #007bff; padding: 8px 15px; border-radius: 5px; text-decoration: none; }
+        .also-bought { margin-top: 30px; padding-top: 25px; border-top: 1px solid #eee; }
+        .also-bought h3 { margin-bottom: 20px; color: #333; font-size: 20px; }
+        .also-bought-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; }
+        .also-bought-item { background: #f8f9fa; padding: 15px; border-radius: 8px; }
+        .also-bought-item a { color: #333; text-decoration: none; font-size: 16px; font-weight: bold; }
+        .also-bought-item a:hover { color: #007bff; }
+        .also-bought-item .price { font-size: 18px; margin: 8px 0 0; }
+        .also-bought-empty { color: #666; text-align: center; padding: 20px; background: #f8f9fa; border-radius: 8px; }
+    </style>
+</head>
+<body>
+    {% include '_toast.html' %}
+    <header>
+        <h1>简单电商</h1>
+        <nav>
+            <div style="float: left;">
+                <a href="/">全部商品</a>
+            </div>
+            <div style="float: right;">
+                <span class="user-info">欢迎，{{ username }}！</span>
+                <a href="/orders" class="cart-link">📋 我的订单</a>
+                <a href="/cart" class="cart-link">🛒 购物车</a>
+                <a href="/logout" class="logout-btn">退出</a>
+            </div>
+            <div style="clear: both;"></div>
+        </nav>
+    </header>
+
+    <main>
+        <a href="/" class="back-btn">← 返回商品列表</a>
+
+        <div class="detail-card">
+            <h2>{{ product[1] }}</h2>
+            <span class="category">{{ product[5] }}</span>
+            <div class="price">¥{{ product[2] }}</div>
+            <div class="desc">{{ product[3] }}</div>
+            <div class="stock">库存: {{ product[4] }} 件</div>
+            <div class="detail-row"><strong>分类:</strong> {{ product[5] }}</div>
+            <button class="add-btn" onclick="window.location.href='/add?product_id={{ product[0] }}'">
+                加入购物车
+            </button>
+
+            <div class="also-bought">
+                <h3>🔥 浏览过此商品的人也买了</h3>
+                {% if also_bought %}
+                <div class="also-bought-grid">
+                    {% for item in also_bought %}
+                    <div class="also-bought-item">
+                        <a href="/product/{{ item[0] }}">{{ item[1] }}</a>
+                        <div class="price">¥{{ item[2] }}</div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <p class="also-bought-empty">暂无其他推荐</p>
+                {% endif %}
+            </div>
+        </div>
+    </main>
+</body>
+</html>

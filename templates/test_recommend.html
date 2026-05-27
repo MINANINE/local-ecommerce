@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>推荐功能调试</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: Arial; }
+        body { background: #f5f5f5; padding: 20px; }
+        .header {
+            background: #6f42c1;
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .panel {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .panel h2 { margin-bottom: 15px; color: #333; font-size: 18px; }
+        .info-row { margin-bottom: 8px; color: #555; }
+        .info-row strong { color: #333; }
+        .error-box {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #f5c6cb;
+        }
+        .success-box {
+            background: #d4edda;
+            color: #155724;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #c3e6cb;
+            margin-bottom: 15px;
+        }
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .data-table th {
+            background: #343a40;
+            color: white;
+            padding: 12px;
+            text-align: left;
+        }
+        .data-table td {
+            padding: 10px;
+            border-bottom: 1px solid #eee;
+        }
+        .data-table tr:hover { background: #f8f9fa; }
+        .back-btn {
+            display: inline-block;
+            padding: 8px 15px;
+            background: #6c757d;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        .api-link {
+            display: inline-block;
+            margin-left: 10px;
+            padding: 8px 15px;
+            background: #007bff;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <a href="/admin" class="back-btn">返回管理后台</a>
+    <a href="/api/recommend" class="api-link" target="_blank">查看 API 原始 JSON</a>
+
+    <div class="header">
+        <h1>推荐功能调试页</h1>
+        <p>仅管理员可访问，用于测试 get_item_cf_recommendations()</p>
+    </div>
+
+    <div class="panel">
+        <h2>当前用户信息</h2>
+        <div class="info-row"><strong>用户 ID:</strong> {{ user_id }}</div>
+        <div class="info-row"><strong>用户名:</strong> {{ username }}</div>
+    </div>
+
+    <div class="panel">
+        <h2>推荐结果</h2>
+        {% if error %}
+            <div class="error-box">
+                <strong>推荐函数报错:</strong><br>{{ error }}
+            </div>
+        {% elif recommendations %}
+            <div class="success-box">成功获取 {{ recommendations|length }} 条推荐</div>
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>商品名称</th>
+                        <th>价格</th>
+                        <th>库存</th>
+                        <th>分类</th>
+                        <th>销量</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for rec in recommendations %}
+                    <tr>
+                        <td>{{ rec[0] }}</td>
+                        <td><a href="/product/{{ rec[0] }}">{{ rec[1] }}</a></td>
+                        <td>¥{{ rec[2] }}</td>
+                        <td>{{ rec[4] }}</td>
+                        <td>{{ rec[5] }}</td>
+                        <td>{{ rec[6] }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <div class="error-box">推荐列表为空，请检查数据库中是否有商品和订单数据。</div>
+        {% endif %}
+    </div>
+</body>
+</html>
