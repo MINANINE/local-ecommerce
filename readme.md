@@ -28,7 +28,7 @@ python generate_demo_data.py
 
 ### 访问地址
 -本地访问: http://127.0.0.1:5000
--公网访问: 
+-公网访问: https://minamine.pythonanywhere.com/login
 ---
 ## 账号体系
 
